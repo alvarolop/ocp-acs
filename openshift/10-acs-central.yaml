@@ -1,0 +1,63 @@
+apiVersion: template.openshift.io/v1
+kind: Template
+metadata:
+  name: acs-operator
+  annotations:
+    description: Template to deploy the ACS operator on OCP.
+    tags: acm,management,operator
+    iconClass: icon-openshift
+    openshift.io/provider-display-name: Red Hat, Inc.
+    openshift.io/support-url: https://access.redhat.com
+objects:
+
+- apiVersion: project.openshift.io/v1
+  kind: Project
+  metadata:
+    name: ${ACS_NAMESPACE}
+    annotations:
+      openshift.io/description: "This project contains all the resources related to the ACS cluster"
+      openshift.io/display-name: "Stackrox"
+
+- apiVersion: platform.stackrox.io/v1alpha1
+  kind: Central
+  metadata:
+    name: stackrox-central-services
+    namespace: ${ACS_NAMESPACE}
+  spec:
+    monitoring:
+      openshift:
+        enabled: true
+    central:
+      exposure:
+        loadBalancer:
+          enabled: false
+          port: 443
+        nodePort:
+          enabled: false
+        route:
+          enabled: true
+      telemetry:
+        enabled: true
+      db:
+        isEnabled: Default
+        persistence:
+          persistentVolumeClaim:
+            claimName: central-db
+      persistence:
+        persistentVolumeClaim:
+          claimName: stackrox-db
+    egress:
+      connectivityPolicy: Online
+    scanner:
+      analyzer:
+        scaling:
+          autoScaling: Enabled
+          maxReplicas: 5
+          minReplicas: 2
+          replicas: 3
+    
+parameters:
+- name: ACS_NAMESPACE
+  description: "The project where ACS and its operator will be installed."
+  required: false
+  value: "stackrox"

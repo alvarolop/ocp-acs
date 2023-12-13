@@ -1,0 +1,60 @@
+apiVersion: template.openshift.io/v1
+kind: Template
+metadata:
+  name: acs-operator
+  annotations:
+    description: Template to deploy the ACS operator on OCP.
+    tags: acm,management,operator
+    iconClass: icon-openshift
+    openshift.io/provider-display-name: Red Hat, Inc.
+    openshift.io/support-url: https://access.redhat.com
+objects:
+
+- kind: SecuredCluster
+  apiVersion: platform.stackrox.io/v1alpha1
+  metadata:
+    name: stackrox-secured-cluster-${SECURED_CLUSTER_NAME}
+    namespace: ${ACS_NAMESPACE}
+  spec:
+    centralEndpoint: ${CENTRAL_ENDPOINT}
+    clusterName: ${SECURED_CLUSTER_NAME}
+    monitoring:
+      openshift:
+        enabled: true
+    auditLogs:
+      collection: Auto
+    admissionControl:
+      listenOnUpdates: true
+      bypass: BreakGlassAnnotation
+      contactImageScanners: DoNotScanInline
+      listenOnCreates: true
+      replicas: 3
+      timeoutSeconds: 20
+      listenOnEvents: true
+    scanner:
+      analyzer:
+        scaling:
+          autoScaling: Enabled
+          maxReplicas: 5
+          minReplicas: 1
+          replicas: 1
+      scannerComponent: AutoSense
+    perNode:
+      collector:
+        collection: EBPF
+        imageFlavor: Regular
+      taintToleration: TolerateTaints
+
+parameters:
+- name: ACS_NAMESPACE
+  description: "The project where ACS and its operator will be installed."
+  required: false
+  value: "stackrox"
+- name: SECURED_CLUSTER_NAME
+  description: "The name of the secured cluster."
+  required: false
+  value: "hub-cluster"
+- name: CENTRAL_ENDPOINT
+  description: "The central endpoint."
+  required: false
+  value: "central.stackrox.svc:443"
