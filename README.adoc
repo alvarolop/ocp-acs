@@ -1,0 +1,45 @@
+= OpenShift - Advanced Cluster Security
+Álvaro López Medina <alopezme@redhat.com>
+v1.0, 2023-09
+// Metadata
+:description: This repository explores the typical installation scenarios and relevant considerations
+:keywords: openshift, red hat, installation, security, ACS
+// Create TOC wherever needed
+:toc: macro
+:sectanchors:
+:sectnumlevels: 2
+:sectnums: 
+:source-highlighter: pygments
+:imagesdir: docs/images
+// Start: Enable admonition icons
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+// Icons for GitHub
+:yes: :heavy_check_mark:
+:no: :x:
+endif::[]
+ifndef::env-github[]
+:icons: font
+// Icons not for GitHub
+:yes: icon:check[]
+:no: icon:times[]
+endif::[]
+// End: Enable admonition icons
+
+
+This repository explores the typical installation scenarios and relevant considerations of OpenShift Advanced Cluster Security.
+
+// Create the Table of contents here
+toc::[]
+
+
+
+== Introduction
+
+
+
+== Installation
