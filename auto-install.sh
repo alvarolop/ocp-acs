@@ -53,15 +53,12 @@ while [[ $(oc get pods -l app=central -n $ACS_NAMESPACE -o 'jsonpath={..status.c
 
 # 3) Deploy the ACS secrets on the cluster
 echo -e "\n[3/4]Deploying the ACS Secured Cluster"
-ACS_ROUTE=$(oc get routes central -n $ACS_NAMESPACE --template='https://{{ .spec.host }}')
-roxctl central login -e $ACS_ROUTE # | grep "Access token:"  | sed -n 's/^INFO:  Access token: //p'
+ROX_CENTRAL_ADDRESS=$(oc get routes central -n $ACS_NAMESPACE --template='https://{{ .spec.host }}:443')
+ACS_ADMIN_PASSWORD=$(oc get secrets central-htpasswd -n $ACS_NAMESPACE -o go-template --template='{{ index .data "password" | base64decode}}')
 
-read -p 'Copy here the Access token: ' ACCESS_TOKEN
+roxctl central whoami -e $ROX_CENTRAL_ADDRESS -p $ACS_ADMIN_PASSWORD
 
-export ROX_API_TOKEN=$ACCESS_TOKEN
-ROX_CENTRAL_ADDRESS="$ACS_ROUTE:443"
-
-roxctl -e $ROX_CENTRAL_ADDRESS \
+roxctl -e $ROX_CENTRAL_ADDRESS -p $ACS_ADMIN_PASSWORD \
   central init-bundles generate $SECURED_CLUSTER_NAME \
   --insecure-skip-tls-verify \
   --output-secrets cluster_init_bundle.yaml
@@ -78,13 +75,10 @@ oc process -f openshift/20-securedcluster.yaml \
 # echo -n "Waiting for Secured Cluster pod ready..."
 # while [[ $(oc get pods -l app=central -n $ACS_NAMESPACE -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; do echo -n "." && sleep 1; done; echo -n -e "  [OK]\n"
 
-
-
-
-ACS_PASS=$(oc -n $ACS_NAMESPACE get secret central-htpasswd -o go-template='{{index .data "password" | base64decode}}')
+oc wait --for=condition=Deployed securedcluster stackrox-secured-cluster-$SECURED_CLUSTER_NAME -n $ACS_NAMESPACE
 
 echo -e "\nURLS:"
-echo -e " * ACS: $ACS_ROUTE"
+echo -e " * ACS: $ROX_CENTRAL_ADDRESS"
 echo -e " * User: admin"
-echo -e " * Pass: $ACS_PASS"
+echo -e " * Pass: $ACS_ADMIN_PASSWORD"
 
