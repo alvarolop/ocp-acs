@@ -21,7 +21,7 @@ objects:
 - apiVersion: operators.coreos.com/v1
   kind: OperatorGroup
   metadata:
-    name: open-cluster-management
+    name: rhacs-operator
     namespace: ${ACS_OPERATOR_NAMESPACE}
   spec: {}
 
